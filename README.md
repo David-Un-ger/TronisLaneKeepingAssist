@@ -4,12 +4,12 @@ This repository provides 3 classes (lane detection, steering control, velocity c
 The classes were created using the Unreal Engine based 3D simulator Tronis.
 
 Input for the algorithm:
-- Camera imaga of front mono camera
+- camera image of front monocular camera
 - current speed
-- object list to determine distance from vehile driving ahead
+- object list to determine distance from vehicle driving ahead
 
 ## Part 1: Lane detection
-This part of the readme discussed the class LaneFinder, which inputs an RGB image and outputs a point towards which the car should steer to keep the lane. 
+This part of the readme discusses the class `LaneFinder`, which inputs an RGB image and outputs a point towards which the car should steer to keep the lane. 
 
 The implementation is based on classical algorithms and uses OpenCV. Lane detection using deep learning would make the algorithm more flexible, but is not part of this repo.
 
@@ -39,7 +39,7 @@ Cropping the image results in a much smaller image and less processing effort.
 
 Two properties can be used to find the relevant pixels that belong to a lane marking: the color (hence lane markings are white) and the gradient (hence the markings are of different color than the street).
 
-To find and select only "white" pixels, that are likely to belong to a line, the image is first converted into HSV space (HSV is much more discriminative between the different colors) and then the `cv.inRange()` function is used.
+To find and select only "white" pixels that are likely to belong to a line, the image is first converted into HSV space (HSV is much more discriminative between the different colors) and then the `cv.inRange()` function is used.
 
 ```
 cvtColor(imgCut, imgHSV, COLOR_BGR2HSV);
@@ -67,16 +67,16 @@ The resulting image looks like follows:
 
 ### Step 2: Bird´s Eye View Transformation
 
-Obviously, the image lane markings are no line and are hard do detect in the perspective space. In the Bird´s Eye View (BEV) the lanes are much easier to detect, why the image from step 1 is transformed into BEV. Each 4 input and 4 target points are required to obtain the transformation matrix M using `cv.getPerspectiveTransform()`.
+Obviously, the image lane markings are no line and are hard to detect in the perspective space. In the Bird's Eye View (BEV) the lanes are much easier to detect, which is why the image from step 1 is transformed into BEV. Each 4 input and 4 target points are required to obtain the transformation matrix M using `cv.getPerspectiveTransform()`.
 
-Both, the transformation matrix and the lane image are fed into the `cv.warpPerspective()` function which outputs the lane markings in BEV.
+Both the transformation matrix and the lane image are fed into the `cv.warpPerspective()` function which outputs the lane markings in BEV.
 
 <img src="https://user-images.githubusercontent.com/35065831/163928386-154da8c1-2bf2-435a-bf97-862ef9d0717c.jpg" alt="bev" width="200"/>
 
 ### Step 3: Contour Finding
 
 The function `findLineContours()` uses `cv.findContours()` to find the contours in the BEV image that correspond to the left and right lane marking. Therefore, two checks are performed:
-- is the contour large enough to be a lane marking (this is useful to omit some errors in preceeding steps)
+- is the contour large enough to be a lane marking (this is useful to omit some errors in preceding steps)
 - does the contour belong to the left or to the right lane marking
 
 If no fitting lane markings are found, old lane markings from the last processing steps are used as backup. 
@@ -85,15 +85,17 @@ If no fitting lane markings are found, old lane markings from the last processin
 
 The contours for each lane marking are useful for estimating the steering command directly. The function `contours2Points()` is used to output a steering target value that can be used to control the vehicle.
 
-The contours for the left and right line each consist of a vector of points. A more useful representation for each lane marking is a second order polynomial that can be found using the function `PolynomialFit()` function. Given to two polynomials in the BEV space, a steering target value can be computed assuming the one always wants to steer to the middle of the lane markings. A x value (in front of the vehicle) corresponding to a distance of ~8m is plugged into both polynomials.
-The arrithmetic mean of both obtained y values yields the target value for the steering.
+The contours for the left and right line each consist of a vector of points. A more useful representation for each lane marking is a second order polynomial that can be found using the function `PolynomialFit()` function. Given the two polynomials in the BEV space, a steering target value can be computed assuming the one always wants to steer to the middle of the lane markings. A x value (in front of the vehicle) corresponding to a distance of ~8m is plugged into both polynomials.
+The arithmetic mean of both obtained y values yields the target value for the steering.
 
-Just for visulization purpose, the detected contour for the left line is marked in red, the right line is marked in blue and both resulting polynomials are indicated by green dots. The steering target 8m in front of the car is shown using a white circle.
+Just for visualization purposes, the detected contour for the left line is marked in red, the right line is marked in blue and both resulting polynomials are indicated by green dots. The steering target 8m in front of the car is shown using a white circle.
 
 <img src="https://user-images.githubusercontent.com/35065831/163937474-c8cffa6e-304c-4218-80d0-d96ba8d5b2fb.jpg" alt="bev_lines" width="200"/>
 
 As a final step for the `LaneFinder`, the BEV image is transformed back into the perspective image and superimposed to the input image: 
 <img src="https://user-images.githubusercontent.com/35065831/162695892-27b9ad8b-7c93-46de-8e27-83727465d0da.jpg" alt="final" width="400"/>
+
+This last step is also just for visualization and not required to steer the vehicle. 
 
 
 ## Part 2: Steering Control
