@@ -100,5 +100,14 @@ This last step is also just for visualization and not required to steer the vehi
 
 ## Part 2: Steering Control
 
+The steering controller is a simple PD-approach. An 'I' part is not required, since there is no permanent steering deviation, since the required steering angle is quite dynamic.
+The controller is not speed dependent. A more sophisticated version would probably include speed, but for sake of simplicity, it is omitted for this implementation and it works well.
+
+The PD-controller takes the input value from lane detection (part 1), weights it with the P parameter and takes the derivative of the input value and weights it with the parameter D to produce a suitable control signal.
+The P value ensures that the controller goes into the expected direction. The D parameter facilitates less overshooting of the control instruction.
+
+The parameters P and D need to be determined empirically. Using sliders from OpenCV eases this task a lot.
+
+<a title="Arturo Urquizo, CC BY-SA 3.0 &lt;https://creativecommons.org/licenses/by-sa/3.0&gt;, via Wikimedia Commons" href="https://commons.wikimedia.org/wiki/File:PID.svg"><img width="512" alt="PID" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/PID.svg/512px-PID.svg.png"></a>
 
 ## Part 3: Velocity Control
