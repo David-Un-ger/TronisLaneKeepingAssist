@@ -111,3 +111,13 @@ The parameters P and D need to be determined empirically. Using sliders from Ope
 <a title="Arturo Urquizo, CC BY-SA 3.0 &lt;https://creativecommons.org/licenses/by-sa/3.0&gt;, via Wikimedia Commons" href="https://commons.wikimedia.org/wiki/File:PID.svg"><img width="512" alt="PID" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/2d/PID.svg/512px-PID.svg.png"></a>
 
 ## Part 3: Velocity Control
+
+Similar to the steering controller in part 2, the velocity controller also uses a PD-controller. It controls the acceleration based on two inputs: 
+- the target speed
+- the distance to the vehicle in front of the ego vehicle
+
+The distance to the other vehicle is not determined by evaluating the camera image, but is for simplicity received by an object list sensor that directly returns the distance from the simulation. This is of course different from a real world scenario, but it makes the whole project easier and more realistic.
+
+In the `Acceleration Control` class, there is a switch which checks if a vehicle is driving in front of the ego-vehicle. If this is the case, the acceleration control is purely based on the distance to this vehicle. If there is no vehicle within a certain distance, the acceleration control is purely based on the difference between target speed and the current speed.
+
+
